@@ -1,8 +1,9 @@
 class ComboKeys {
-	constructor(comboCodes = [], interval = 1000, callback = () => {}) {
+	constructor(comboCodes = [], interval = 1000, callback = () => { }, domBase = document) {
 		this.comboCodes = comboCodes;
 		this.interval = interval;
 		this.callback = callback;
+		this.domBase = domBase;
 	}
 
 	keyHandler(event) {
@@ -38,9 +39,24 @@ class ComboKeys {
 		}
 	}
 
+	code(newCodes = []) {
+		if (newCodes.length > 0) this.comboCodes = newCodes;
+		return this;
+	}
+
+	limit(interval = 1000) {
+		this.interval = interval;
+		return this;
+	}
+
 	do(callback, preventDefault = true) {
 		this.preventDefault = preventDefault;
 		this.callback = callback;
+		return this;
+	}
+
+	at(domBase = document) {
+		this.domBase = domBase;
 		return this;
 	}
 
@@ -49,19 +65,21 @@ class ComboKeys {
 		this.lastTime = 0;
 		this.limit = limit;
 		this.handler = (ev) => this.keyHandler(ev);
-		document.addEventListener('keydown', this.handler);
-		document.addEventListener('keyup', this.handler);
+		this.domBase.addEventListener('keydown', this.handler);
+		this.domBase.addEventListener('keyup', this.handler);
 		return this;
 	}
 
-	off() {
-		document.removeEventListener('keydown', this.handler);
-		document.removeEventListener('keyup', this.handler);
-		delete this.hitCodes;
-		delete this.lastTime;
-		delete this.limit;
-		delete this.preventDefault;
-		delete this.handler;
+	off(cleanup = false) {
+		this.domBase.removeEventListener('keydown', this.handler);
+		this.domBase.removeEventListener('keyup', this.handler);
+		if (cleanup) {
+				delete this.hitCodes;
+				delete this.lastTime;
+				delete this.preventDefault;
+				delete this.handler;
+				delete this.debugger;
+		}
 		return this;
 	}
 
