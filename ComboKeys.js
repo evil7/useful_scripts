@@ -1,90 +1,104 @@
 class ComboKeys {
-	constructor(comboCodes = [], interval = 1000, callback = () => { }, domBase = document) {
-		this.comboCodes = comboCodes;
-		this.interval = interval;
-		this.callback = callback;
-		this.domBase = domBase;
-	}
+    constructor(comboCodes = [], interval = 1000, callback = () => { }, domBase = document) {
+        this.comboCodes = this.codeParse(comboCodes);
+        this.interval = interval;
+        this.callback = callback;
+        this.domBase = domBase;
+    }
 
-	keyHandler(event) {
-		const keySymbol = { keydown: '+', keyup: '-' };
-		const newCode = keySymbol[event.type] + event.code;
-		// pass repeat
-		if (event.repeat) return;
-		// debug
-		if (this.debugger) console.log(event, newCode);
-		// newCode check
-		if (this.comboCodes[this.hitCodes.length] === newCode) {
-			this.hitCodes.push(newCode);
-			if (this.hitCodes.length === 1) {
-				this.lastTime = new Date().getTime();
-			} else if (this.hitCodes.length > 1) {
-				const currentTime = new Date().getTime();
-				if (currentTime - this.lastTime > this.interval) {
-					this.hitCodes = [];
-				} else {
-					this.lastTime = currentTime;
-				}
-			}
-		} else {
-			this.hitCodes = [];
-		}
-		// combo finish & on time
-		if (this.hitCodes.length === this.comboCodes.length) {
-			this.hitCodes = [];
-			this.limit--;
-			this.preventDefault && event.preventDefault();
-			this.callback && this.callback();
-			if (this.limit === 0) this.off();
-		}
-	}
+    keyHandler(event) {
+        const keySymbol = { keydown: '+', keyup: '-' };
+        const newCode = keySymbol[event.type] + event.code;
+        // pass repeat
+        if (event.repeat) return;
+        // debug
+        if (this.debugger) console.log(event, newCode);
+        // newCode check
+        if (this.comboCodes[this.hitCodes.length] === newCode) {
+            this.hitCodes.push(newCode);
+            if (this.hitCodes.length === 1) {
+                this.lastTime = new Date().getTime();
+            } else if (this.hitCodes.length > 1) {
+                const currentTime = new Date().getTime();
+                if (currentTime - this.lastTime > this.interval) {
+                    this.hitCodes = [];
+                } else {
+                    this.lastTime = currentTime;
+                }
+            }
+        } else {
+            this.hitCodes = [];
+        }
+        // combo finish & on time
+        if (this.hitCodes.length === this.comboCodes.length) {
+            this.hitCodes = [];
+            this.limit--;
+            this.preventDefault && event.preventDefault();
+            this.callback && this.callback();
+            if (this.limit === 0) this.off();
+        }
+    }
 
-	code(newCodes = []) {
-		if (newCodes.length > 0) this.comboCodes = newCodes;
-		return this;
-	}
+    codeParse(codes = []) {
+        const parsedCodes = [];
+        for (let i = 0; i < codes.length; i++) {
+            if (/[+-]/.test(codes[i][0])) {
+                parsedCodes.push(codes[i]);
+            } else {
+                parsedCodes.push('+' + codes[i], '-' + codes[i]);
+            }
+        }
+        return parsedCodes;
+    }
 
-	limit(interval = 1000) {
-		this.interval = interval;
-		return this;
-	}
+    code(newCodes = []) {
+        if (newCodes.length > 0) {
+            this.comboCodes = this.codeParse(newCodes);
+        }
+        return this;
+    }
 
-	do(callback, preventDefault = true) {
-		this.preventDefault = preventDefault;
-		this.callback = callback;
-		return this;
-	}
+    limit(interval = 1000) {
+        this.interval = interval;
+        return this;
+    }
 
-	at(domBase = document) {
-		this.domBase = domBase;
-		return this;
-	}
+    do(callback, preventDefault = true) {
+        this.preventDefault = preventDefault;
+        this.callback = callback;
+        return this;
+    }
 
-	on(limit = Infinity) {
-		this.hitCodes = [];
-		this.lastTime = 0;
-		this.limit = limit;
-		this.handler = (ev) => this.keyHandler(ev);
-		this.domBase.addEventListener('keydown', this.handler);
-		this.domBase.addEventListener('keyup', this.handler);
-		return this;
-	}
+    at(domBase = document) {
+        this.domBase = domBase;
+        return this;
+    }
 
-	off(cleanup = false) {
-		this.domBase.removeEventListener('keydown', this.handler);
-		this.domBase.removeEventListener('keyup', this.handler);
-		if (cleanup) {
-				delete this.hitCodes;
-				delete this.lastTime;
-				delete this.preventDefault;
-				delete this.handler;
-				delete this.debugger;
-		}
-		return this;
-	}
+    on(limit = Infinity) {
+        this.hitCodes = [];
+        this.lastTime = 0;
+        this.limit = limit;
+        this.handler = (ev) => this.keyHandler(ev);
+        this.domBase.addEventListener('keydown', this.handler);
+        this.domBase.addEventListener('keyup', this.handler);
+        return this;
+    }
 
-	debug(isDebug = true) {
-		this.debugger = isDebug;
-		return this;
-	}
+    off(cleanup = false) {
+        this.domBase.removeEventListener('keydown', this.handler);
+        this.domBase.removeEventListener('keyup', this.handler);
+        if (cleanup) {
+            delete this.hitCodes;
+            delete this.lastTime;
+            delete this.preventDefault;
+            delete this.handler;
+            delete this.debugger;
+        }
+        return this;
+    }
+
+    debug(isDebug = true) {
+        this.debugger = isDebug;
+        return this;
+    }
 }
